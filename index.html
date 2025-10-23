@@ -3,14 +3,44 @@
   <head>
     <meta charset="utf-8" />
     <title>Redirecting…</title>
-    <!-- meta refresh (not ideal for SEO) -->
-    <meta http-equiv="refresh" content="0;url=https://www.google.com/search?udm=50">
+    <meta name="robots" content="noindex">
     <script>
-      // JS redirect (faster, more consistent)
-      window.location.replace("https://www.google.com/search?udm=50");
+      (function () {
+        // Destination base
+        const dst = new URL("https://www.google.com/search");
+
+        // Pull ?q= from current URL if present
+        const src = new URL(window.location.href);
+        const q = src.searchParams.get("q");
+        if (q) dst.searchParams.set("q", q);
+
+        // Force the AI-mode flag (note: unofficial, may change)
+        dst.searchParams.set("udm", "50");
+
+        // Optional: preserve some marketing params
+        // for (const k of ["utm_source","utm_medium","utm_campaign"]) {
+        //   const v = src.searchParams.get(k);
+        //   if (v) dst.searchParams.set(k, v);
+        // }
+
+        // Fast client-side redirect (behaves like 302)
+        window.location.replace(dst.toString());
+      })();
     </script>
+    <!-- Meta refresh as a fallback (rarely needed) -->
+    <meta http-equiv="refresh" content="0;url=https://www.google.com/search?udm=50">
   </head>
   <body>
-    Redirecting… If you are not redirected, <a href="https://www.google.com/search?udm=50">click here</a>.
+    Redirecting… If you are not redirected, <a id="fallback" href="https://www.google.com/search?udm=50">click here</a>.
+    <script>
+      // Update fallback link to include q if present
+      (function(){
+        const a = document.getElementById('fallback');
+        const u = new URL(a.href);
+        const q = new URL(window.location.href).searchParams.get('q');
+        if (q) u.searchParams.set('q', q);
+        a.href = u.toString();
+      })();
+    </script>
   </body>
 </html>
